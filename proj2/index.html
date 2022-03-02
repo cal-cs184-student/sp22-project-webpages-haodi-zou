@@ -51,9 +51,9 @@
 
     <p>de Casteljau’s algorithm allows us to create smooth Bezier curves from the defined control points x<sub>0</sub>…x<sub>n-1</sub>,
        and a parameter t which defines the relative location between xi and x<sub>i+1</sub>. 
-       By iteratively applying linear interpolation, lerp(<b>p<sub>i</sub></b>, <b>p<sub>i+1</sub></b>, t) = (1 − t)<b>p<sub>i</sub></b> + t<b>p<sub>i+1</sub></b>, 
+       We can iteratively apply linear interpolation, lerp(<b>p<sub>i</sub></b>, <b>p<sub>i+1</sub></b>, t) = (1 − t)<b>p<sub>i</sub></b> + t<b>p<sub>i+1</sub></b>, 
        until we are left with a single point to get f(t) on the Bezier curve. In our implementation, 
-       the function evaluateStep(...)performs one level of interpolation when it is called. 
+       the function evaluateStep(...) performs one level of interpolation when it is called. 
        We used the lerp function to find the intermediate points (when size of the points is greater than 1)or the final interpolated 
        vector (when the size of points is less or equal to 1, which means that we reach the single interpolated point on the Bezier curve). 
     </p>
@@ -347,9 +347,9 @@
     So, we created a vector called edges in step 2 to solve this problem.
   
     </p>
-    <p> Shown below, after performing lpop subdivision, the sharp corners and edges became smoother and round. 
+    <p> Shown below, after performing loop subdivision, the sharp corners and edges became smoother and round. 
       Upsampling has this effect because we are using the weighted average of neighboring vertices to calculate the position of a 
-      newly sampled point. TWe can reduce this effect by pre-splitting some edges because splitting can make vertices closer to each other. 
+      newly sampled point. We can reduce this effect by pre-splitting some edges because splitting can make vertices closer to each other. 
       Then, the averaging effect will not be that big because if two vertices are closer, the change in position of the vertex will be smaller, thus reducing the smoothing effect.
       <div align="middle">
         <table style="width=100%">
@@ -381,7 +381,7 @@
         As shown above, the cube became asymmetric upsampling. 
         This is because the original mesh was asymmetric in its edges, 
         so vertices may have different numbers of neighbors (3 or 4 edges coming out of it, so we have different n values in arithmetic). 
-        Pre-processing helios alleviate the effect. We splitted every edge on the face to make the edges symmetric in every face 
+        Pre-processing helps alleviate the effect. We splitted every edge on the face to make the edges symmetric in every face 
         (8 parts/face). In other words, each corner has the same number of edges coming out of it.
         <div align="middle">
           <table style="width=100%">
