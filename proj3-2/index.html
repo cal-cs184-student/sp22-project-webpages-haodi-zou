@@ -1,7 +1,242 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 3-2 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+  <style>
+    body {
+      padding: 100px;
+      width: 1000px;
+      margin: auto;
+      text-align: left;
+      font-weight: 300;
+      font-family: 'Open Sans', sans-serif;
+      color: #121212;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      font-family: 'Source Sans Pro', sans-serif;
+    }
+  </style>
+  <title>CS 184 PathTracer</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+  <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2022</h1>
+  <h1 align="middle">Project 3-2: Pathtracer 2</h1>
+  <h2 align="middle">Shuyao Zhou, Haodi Zou, CS184-azhz3-2</h2>
+
+  <br>
+
+  <p>
+    Link to webpage: https://cal-cs184-student.github.io/sp22-project-webpages-haodi-zou/proj3-2/index.html
+  </p>
+
+  <div>
+
+    <h2 align="middle">Overview</h2>
+    <p>
+    	In this project, we continued on what we have for project 3-1 and implemented microfacet materials as well as a thin-lens camera model to simulate the depth of field effect. We chose to implement part 2 and part 4.
+    </p>
+
+    <br>
+
+    <h2 align="middle">Part 2: Microfacet Material</h3>
+
+    <p>In this part, we implemented microfacet materials according to the formula below, 
+where F is the Fresnel term, G is the shadowing-masking term, and D is the normal distribution function, 
+n is the macro surface normal, 
+which is always (0,0,1), and h is the half vector.<div align="middle">
+	<table style="width=100%">
+	  <tr>
+		<td>
+		  <img src="images/microfacet.png" align="middle" width="300px" />
+		</td>
+	  </tr>
+	</table>
+  </div>
+  
+  <br>
+  Alpha represents the roughness of the macro surface. Here are four golden dragon images rendered with different alpha values. The higher the alpha value, such as 0.5, the rougher the material, meaning the light diffuses more. The lower the alpha value, such as 0.005, the more shiny the material, and the dragon is reflective but has more noise than high alpha rates. For alpha = 0.25 and alpha = 0.05, the material is in between roughness and glossiness. 
+  <br>
+  <br>
+  For the images below, we used 256 samples per pixel and 4 samples per light. The number of bounces is 7. And all the images are generated under importance sampling.   
+<br>
+<br>
+<div align="middle">
+	<table style="width=100%">
+	  <tr>
+		<td>
+		  <img src="images/dragon_au_005.png" align="middle" width="400px" />
+		  <figcaption align="middle">Dragon with alpha = 0.005</figcaption>
+		</td>
+		<td>
+		  <img src="images/dragon_au_05.png" align="middle" width="400px" />
+		  <figcaption align="middle">Dragon with alpha = 0.05.</figcaption>
+		</td>
+	  </tr>
+	  <br>
+	  <tr>
+		<td>
+		  <img src="images/dragon_au_25.png" align="middle" width="400px" />
+		  <figcaption align="middle">Dragon with alpha = 0.25</figcaption>
+		</td>
+		<td>
+		  <img src="images/dragon_au_5.png" align="middle" width="400px" />
+		  <figcaption align="middle">Dragon with alpha = 0.5</figcaption>
+		</td>
+	  </tr>
+	</table>
+  </div>
+</p>
+<br>
+	</p>
+<p>
+	Using a sampling rate of 64 samples per pixel and 1 sample per light, and the number of bounces is 7, we compared two sampling methods. The images below are copper bunnies rendered using cosine hemisphere sampling (default) and importance sampling. Clearly, cosine hemisphere sampling has more noise than importance sampling, and the bunny is darker. Cosine hemisphere sampling requires more samples before it converges. We sample theta and phi​​ according to some pdfs p_theta and p_phi, then combine them to get the sampled microfacet normal h and its pdf. We want these pdfs p_theta and p_phi to​​ resemble D(h) , the normal distribution function, to reduce noise. 
+	In our implementation of importance sampling, we allowed sampling of more common normals. 
+	<div align="middle">
+		<table style="width=100%">
+		  <tr>
+			<td>
+			  <img src="images/CBbunny_microfacet_cu_hemi.png" align="middle" width="400px" />
+			  <figcaption align="middle">Copper bunny with cosine hemisphere sampling. </figcaption>
+			</td>
+			<td>
+			  <img src="images/CBbunny_microfacet_cu_importance.png" align="middle" width="400px" />
+			  <figcaption align="middle">Copper bunny with importance sampling. </figcaption>
+			</td>
+		  </tr>
+		  <br>
+		</table>
+	  </div> 
+</p>
+
+<p>
+Here are the bunny images with different microfacet materials. We get the corresponding eta and k values from https://refractiveindex.info/ with wavelength 614 nm(red), 529 nm(green), and 466 nm(blue). Here are the parameters for Carbon and Iron:
+<br>
+<br>
+	Carbon(C): n: 2.4124 2.4254 2.4346 k: 0.000 0.000 0.000 alpha: 0.25
+	<br>
+	<br>
+Fe(Iron): n: 2.8851 2.8857 2.6500 k: 3.0449 2.9157 2.8075 alpha: 0.5
+
+	<div align="middle">
+		<table style="width=100%">
+		  <tr>
+			<td>
+			  <img src="images/dragon_c.png" align="middle" width="400px" />
+			  <figcaption align="middle">Carbon dragon</figcaption>
+			</td>
+			<td>
+			  <img src="images/dragon_fe.png" align="middle" width="400px" />
+			  <figcaption align="middle">Iron dragon</figcaption>
+			</td>
+		  </tr>
+		  <br>
+		</table>
+	  </div> 
+	</p>
+
+	<br>
+
+	<h2 align="middle">Part 4: Depth of Field</h3>
+	<p>
+		Before implementing part 4, we used pinhole cameras, meaning that regardless of how close or far away the object is, everything is in focus. After implementing part 4, we are now able to simulate a thin-lens camera and have the depth of field effect. With our new thin-lens camera model, not all objects are in focus – objects are in focus only if they are on the plane of focus, which is determined by the focal distance and lens radius.
+	</p>
+
+	<p>
+		In our implementation, we first utilized our code in project 3-1 part 1 task 1 to find out the generated ray if we were using a pinhole camera model. Then, we used the given parameters rndR and rndTheta to find out the point on the lens that we are currently sampling, pLens, using the formula below:
+	</p>
+
+	<div align="middle">
+	<table style="width=100%">
+	  <tr>
+		<td>
+		  <img src="images/plens.png" align="middle" width="800px" />
+		</td>
+	  </tr>
+	</table>
+  </div>
+
+  <p>
+  	Next, we computed the point of focus, pFocus, by intersecting the ray generated with the plane of focus. We used the ratio that pFocus / pFocus.z = ray / ray.z and the fact that pFocus.z = -focalDistance. Then, we computed the ray that starts from pLens and goes to pFocus by subtracting pLens from pFocus. We normalized the direction of this ray, converted both its origin and direction from camera to world coordinates, and added pos to the ray’s origin. Finally, we set the ray’s near and far clips and returned it as the result.
+  </p>
+
+	<p>
+		The four images below are a “focus stack” of the dragon microfacet BSDF. All of them show the same scene but focus at four different depths. We used 64 samples per pixel, 4 samples per light, a max ray depth of 12, and an alpha value of 0.25. The aperture size is constant at 0.1. From these four images, we can see that as the focal distance increases, the plane of focus moves back along the dragon.
+	</p>
+
+	<div align="middle">
+	<table style="width=100%">
+	  <tr>
+		<td>
+		  <img src="images/part4-1.png" align="middle" width="400px" />
+		  <figcaption align="middle">Dragon with focal distance = 3.5</figcaption>
+		</td>
+		<td>
+		  <img src="images/part4-2.png" align="middle" width="400px" />
+		  <figcaption align="middle">Dragon with focal distance = 4.0</figcaption>
+		</td>
+	  </tr>
+	  <br>
+	  <tr>
+		<td>
+		  <img src="images/part4-3.png" align="middle" width="400px" />
+		  <figcaption align="middle">Dragon with focal distance = 4.5</figcaption>
+		</td>
+		<td>
+		  <img src="images/part4-4.png" align="middle" width="400px" />
+		  <figcaption align="middle">Dragon with focal distance = 5.0</figcaption>
+		</td>
+	  </tr>
+	</table>
+  </div>
+
+  <br>
+  <p>
+  	The four images below all show the same scene of the dragon microfacet BSDF, but they have different aperture sizes. We used 64 samples per pixel, 4 samples per light, a max ray depth of 12, and an alpha value of 0.25. The focal distance is constant at 4.5. From these four images, we can see that as the aperture size increases, the depth of field becomes shallower, and the image becomes blurrier.
+  </p>
+
+  <div align="middle">
+	<table style="width=100%">
+	  <tr>
+		<td>
+		  <img src="images/part4-5.png" align="middle" width="400px" />
+		  <figcaption align="middle">Dragon with aperture size = 0.01</figcaption>
+		</td>
+		<td>
+		  <img src="images/part4-3.png" align="middle" width="400px" />
+		  <figcaption align="middle">Dragon with aperture size = 0.1</figcaption>
+		</td>
+	  </tr>
+	  <br>
+	  <tr>
+		<td>
+		  <img src="images/part4-7.png" align="middle" width="400px" />
+		  <figcaption align="middle">Dragon with aperture size = 0.25</figcaption>
+		</td>
+		<td>
+		  <img src="images/part4-8.png" align="middle" width="400px" />
+		  <figcaption align="middle">Dragon with aperture size = 0.5</figcaption>
+		</td>
+	  </tr>
+	</table>
+  </div>
+
+  <br>
+
+  <h2 align="middle">Conclusion</h2>
+   <p>
+    In this project, we first looked through the project and decided which two parts we would like to work on and who would work on which part. Then, we reviewed the lectures needed for this project and worked on our own part individually, with Shuyao working on part 2 and Haodi working on part 4. Finally, we combined our working code and write-up together to form our final deliverable. From this project, we have learned to make plans ahead of time, stick to our plans, and communicate timely when we have questions and confusion during the testing process.
+   </p>
+
+
+</body>
+
 </html>
